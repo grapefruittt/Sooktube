@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SOOKTUBE.dao.ListLikeDAO;
 import com.SOOKTUBE.dao.VideoListDAO;
-import com.SOOKTUBE.model.ListLikeDTO;
 import com.SOOKTUBE.model.VideoListDTO;
 import com.SOOKTUBE.service.GCSService;
 
@@ -36,54 +36,79 @@ public class ListLikeController {
 	//user likes a video list
 	@CrossOrigin
 	@RequestMapping(value = "/api/video/list/likeList/{listID}/{username}", method = RequestMethod.POST)
-	public ListLikeDTO userLikesList(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
+	public int[] userLikesList(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
 		
 		if(listlikeDAO.selectDislikeList(listID, username) != null) {
 			listlikeDAO.revertDislike(listID, username);
 		}
 		
+		
 		listlikeDAO.likeaList(listID, username);
+		listlikeDAO.likeaList2(listID);
 		
-		ListLikeDTO res = listlikeDAO.selectLikeList(listID, username);
+		int[] listlike = new int[2];
 		
-		return res;
+		listlike[0] = listlikeDAO.countLike(listID);
+		listlike[1] = listlikeDAO.countDislike(listID);
+		
+		return listlike;
+		
 	}
 	
 	//revert like
 	@CrossOrigin
 	@RequestMapping(value = "/api/video/list/revert/like/{listID}/{username}", method = RequestMethod.DELETE)
-	public String revertLike(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
+	public int[] revertLike(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
 		
 		listlikeDAO.revertLike(listID, username);
+		listlikeDAO.revertLike2(listID);
 		
-		return "like reverted";
+		int[] listlike = new int[2];
+		
+		listlike[0] = listlikeDAO.countLike(listID);
+		listlike[1] = listlikeDAO.countDislike(listID);
+		
+		return listlike;
 		
 	}
 	
 	//user dislikes a video list
 	@CrossOrigin
 	@RequestMapping(value = "/api/video/list/dislikeList/{listID}/{username}", method = RequestMethod.POST)
-	public ListLikeDTO userDislikesList(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
+	public int[] userDislikesList(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
 		
 		if (listlikeDAO.selectLikeList(listID, username) != null) {
 			listlikeDAO.revertLike(listID, username);
 		}
 		
 		listlikeDAO.dislikeaList(listID, username);
+		listlikeDAO.dislikeaList2(listID);
 		
-		ListLikeDTO res = listlikeDAO.selectDislikeList(listID, username);
+		int[] listlike = new int[2];
 		
-		return res;
+		listlike[0] = listlikeDAO.countLike(listID);
+		listlike[1] = listlikeDAO.countDislike(listID);
+		
+		return listlike;
+		
 	}
 	
 	//revert dislike
 	@CrossOrigin
 	@RequestMapping(value = "/api/video/list/revert/dislike/{listID}/{username}", method = RequestMethod.DELETE)
-	public String revertDislike(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
+	public int[] revertDislike(@PathVariable("listID") final int listID, @PathVariable("username") final String username) throws Exception {
 		
 		listlikeDAO.revertDislike(listID, username);
+		listlikeDAO.revertDislike2(listID);
+
 		
-		return "dislike reverted";
+		int[] listlike = new int[2];
+		
+		listlike[0] = listlikeDAO.countLike(listID);
+		listlike[1] = listlikeDAO.countDislike(listID);
+		
+		return listlike;
+		
 	}
 	
 	//count videoList's like, dislike 
@@ -106,51 +131,52 @@ public class ListLikeController {
 	//get liked list by user
 	@CrossOrigin
 	@RequestMapping(value = "/api/liked/list/byUser/{username}", method = RequestMethod.GET)
-	public VideoListDTO[] likedListbyUser(@PathVariable("username") final String username) throws Exception {
+	public Object[] likedListbyUser(@PathVariable("username") final String username,
+			@RequestParam(required = false, defaultValue = "0") int offset, @RequestParam(required = false, defaultValue = "100") int limit) throws Exception {
 		
-		List<Integer> listID = listlikeDAO.getlikedListbyUser(username);
+		//List<Integer> listID = listlikeDAO.getlikedListbyUser(username);
 		
-		VideoListDTO[] res = new VideoListDTO[listID.size()];
+		Object withTotal[] = new Object[2];
 		
-		for(int i = 0; i < listID.size(); i++) {
-			
-			VideoListDTO[] list = videolistDAO.getVideoListbyID(listID.get(i));
-			
-			res[i] = list[0];
-			
-			res[i].setLike(listlikeDAO.countLike(listID.get(i)));
-			res[i].setDislike(listlikeDAO.countDislike(listID.get(i)));
+		VideoListDTO[] res = listlikeDAO.getLikeListDesc(username, limit, offset);
+		VideoListDTO[] res1 = listlikeDAO.getLikeListDesc(username, 100, 0);
+		
+		for(int i = 0; i < res.length; i++) {
 			
 			res[i].setUrl(gcsService.getVideobyVIDEOtable(res[i].getThumbnail()));
 			
 		}
 		
-		return res;
+		withTotal[0] = res1.length;
+		withTotal[1] = res;
+		
+		return withTotal;
+		
 	}
 	
 	//get disliked list by user
 	@CrossOrigin
 	@RequestMapping(value = "/api/disliked/list/byUser/{username}", method = RequestMethod.GET)
-	public VideoListDTO[] dislikedListbyUser(@PathVariable("username") final String username) throws Exception {
+	public Object[] dislikedListbyUser(@PathVariable("username") final String username,
+			@RequestParam(required = false, defaultValue = "0") int offset, @RequestParam(required = false, defaultValue = "100") int limit) throws Exception {
 		
-		List<Integer> listID = listlikeDAO.getdislikedListbyUser(username);
 		
-		VideoListDTO[] res = new VideoListDTO[listID.size()];
+		Object withTotal[] = new Object[2];
 		
-		for(int i = 0; i < listID.size(); i++) {
-			
-			VideoListDTO[] list = videolistDAO.getVideoListbyID(listID.get(i));
-			
-			res[i] = list[0];
-			
-			res[i].setLike(listlikeDAO.countLike(listID.get(i)));
-			res[i].setDislike(listlikeDAO.countDislike(listID.get(i)));
+		
+		VideoListDTO[] res = listlikeDAO.getdisLikeListDesc(username, limit, offset);
+		VideoListDTO[] res1 = listlikeDAO.getdisLikeListDesc(username, 100, 0);
+		
+		for(int i = 0; i < res.length; i++) {
 			
 			res[i].setUrl(gcsService.getVideobyVIDEOtable(res[i].getThumbnail()));
 			
 		}
 		
-		return res;
+		withTotal[0] = res1.length;
+		withTotal[1] = res;
+		
+		return withTotal;
 		
 	}
 }

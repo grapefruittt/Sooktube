@@ -24,9 +24,41 @@
 		    resultType="com.SOOKTUBE.model.VideoListDTO">
     		
 			SELECT 
-			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`
+			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`, `copied`
 			FROM listInfo
     		
+    		</select>
+
+		    <select id="getVideoListOrderby"
+		    resultType="com.SOOKTUBE.model.VideoListDTO">
+    		
+			SELECT 
+			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`, `copied`, `like`
+			FROM listInfo
+			
+    		ORDER BY
+        		<choose>
+            		<when test="order == 'listID'">
+                		`listID`
+            		</when>
+            		<when test="order == 'like'">
+                		`like`
+            		</when>
+
+        		</choose>
+       		DESC
+       		<choose>
+       		
+       			<when test="order == 'like'">
+       				, `listID`
+       				DESC
+       			</when>
+       		</choose>
+    		
+    		<if test='limit != null and offset != null'>
+    		LIMIT #{limit} OFFSET #{offset}
+    		</if>
+    		    		
     		</select>
     		
     		<select id="getVideoListbyID"
@@ -34,7 +66,7 @@
 		    resultType="com.SOOKTUBE.model.VideoListDTO">
     		
 			SELECT 
-			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`
+			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`, `copied`
 			FROM listInfo
 			WHERE listInfo.`listID` = #{listID}
 
@@ -46,9 +78,32 @@
 		    resultType="com.SOOKTUBE.model.VideoListDTO">
     		
 			SELECT 
-			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`
+			     `listID`, `listName`, `listDesc`, `username`, `isPublic`, `thumbnail`, `copied`, `like`
 			FROM listInfo
 			WHERE listInfo.`username` = #{username}
+			
+    		ORDER BY
+        		<choose>
+            		<when test="order == 'listID'">
+                		`listID`
+            		</when>
+            		<when test="order == 'like'">
+                		`like`
+            		</when>
+
+        		</choose>
+       		DESC
+       		<choose>
+       		
+       			<when test="order == 'like'">
+       				, `listID`
+       				DESC
+       			</when>
+       		</choose>
+    		
+    		<if test='limit != null and offset != null'>
+    		LIMIT #{limit} OFFSET #{offset}
+    		</if>
 
     		
     		</select>
@@ -58,7 +113,7 @@
     		parameterType="Integer"
 		    resultType="com.SOOKTUBE.model.VideoListDTO">
     		
-			SELECT videoList.`listID`, videoList.`videoID`, `listName`, `listDesc`, videoList.`username`, `isPublic`, `thumbnail`, `like`, `dislike`
+			SELECT videoList.`listID`, videoList.`videoID`, `listName`, `listDesc`, videoList.`username`, `isPublic`, `thumbnail`, videoList.`like`, videoList.`dislike`, `copied`
 			FROM videoList, listInfo
 			WHERE videoList.`listID` = #{listID}
 			AND `videoID` = #{videoID}
@@ -73,7 +128,7 @@
 		    resultType="com.SOOKTUBE.model.VideoListDTO">
     		
 			SELECT DISTINCT
-			     videoList.`listID`, `listName`, `listDesc`, videoList.`username`, `isPublic`, `thumbnail`
+			     videoList.`listID`, `listName`, `listDesc`, videoList.`username`, `isPublic`, `thumbnail`, `copied`
 			FROM videoList, listInfo
 			WHERE videoList.`listID` = #{listID}
 
@@ -139,9 +194,32 @@
     			parameterType="String"
     			resultType="com.SOOKTUBE.model.VideoListDTO">
     			
-    			SELECT `listID`, `listName`, `listDesc`, listInfo.`username`, `isPublic`, `thumbnail`
+    			SELECT `listID`, `listName`, `listDesc`, listInfo.`username`, `isPublic`, `thumbnail`, `copied`, `like`
     			FROM listInfo
     			WHERE `listName` LIKE CONCAT('%',#{listName},'%')
+    			
+	    		ORDER BY
+	        		<choose>
+	            		<when test="order == 'listID'">
+	                		`listID`
+	            		</when>
+	            		<when test="order == 'like'">
+	                		`like`
+	            		</when>
+	
+	        		</choose>
+	       		DESC
+	       		<choose>
+	       		
+	       			<when test="order == 'like'">
+	       				, `listID`
+	       				DESC
+	       			</when>
+	       		</choose>
+	    		
+	    		<if test='limit != null and offset != null'>
+	    		LIMIT #{limit} OFFSET #{offset}
+	    		</if>
 
     			
     			</select>  

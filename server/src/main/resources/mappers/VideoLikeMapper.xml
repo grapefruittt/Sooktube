@@ -11,12 +11,27 @@
     </insert>
 
 
+    <update id="likeaVideo2" parameterType="int">
+            
+			UPDATE VIDEO
+			SET `like` = `like` + 1 
+			WHERE (`videoID` = #{videoID});
+    </update>
+
+
     <insert id="dislikeaVideo">
             
             INSERT INTO videoDislike(`videoID`, `username`)
             VALUES(#{videoID}, #{username})
             
     </insert>    
+
+    <update id="dislikeaVideo2" parameterType="int">
+            
+			UPDATE VIDEO
+			SET `dislike` = `dislike` + 1 
+			WHERE (`videoID` = #{videoID});
+    </update>
 
 	<select id="selectLikeVideo"
 		    resultType="com.SOOKTUBE.model.VideoLikeDTO">
@@ -75,13 +90,50 @@
     		WHERE `username` = #{username}
     
     </select>
+    
+	<select id="getLikevideoDesc"
+			resultType="com.SOOKTUBE.model.VideoDTO">
+					
+			SELECT VIDEO.`videoID`, VIDEO.`videoTitle`, VIDEO.`videoDesc`, VIDEO.`videoDate`, VIDEO.`username`, VIDEO.`uploadFileName`, VIDEO.`like`, VIDEO.`dislike`
+			FROM VIDEO
+			WHERE VIDEO.`videoID` IN (SELECT `videoID` from videoLike where `username` = #{username})
+    		
+    		<if test='limit != null and offset != null'>
+    		LIMIT #{limit} OFFSET #{offset}
+    		</if>
+			
+			
+	</select>
 
+
+	<select id="getdisLikevideoDesc"
+			resultType="com.SOOKTUBE.model.VideoDTO">
+					
+			SELECT VIDEO.`videoID`, VIDEO.`videoTitle`, VIDEO.`videoDesc`, VIDEO.`videoDate`, VIDEO.`username`, VIDEO.`uploadFileName`, VIDEO.`like`, VIDEO.`dislike`
+			FROM VIDEO
+			WHERE VIDEO.`videoID` IN (SELECT `videoID` from videoDislike where `username` = #{username})
+    		
+    		<if test='limit != null and offset != null'>
+    		LIMIT #{limit} OFFSET #{offset}
+    		</if>
+			
+			
+	</select>
+	
     <delete id="revertLike"> 
     	DELETE FROM videoLike
     	WHERE `videoID` = #{videoID}
     	AND
     		`username` = #{username}
     </delete>
+    
+    <update id="revertLike2" parameterType="int">
+            
+			UPDATE VIDEO
+			SET `like` = `like` - 1 
+			WHERE (`videoID` = #{videoID});
+			
+    </update>
 
     <delete id="revertDislike"> 
     	DELETE FROM videoDislike
@@ -89,5 +141,13 @@
     	AND
     		`username` = #{username}
     </delete>
+
+    <update id="revertDislike2" parameterType="int">
+            
+			UPDATE VIDEO
+			SET `dislike` = `dislike` - 1 
+			WHERE (`videoID` = #{videoID});
+			
+    </update>
 
 </mapper>

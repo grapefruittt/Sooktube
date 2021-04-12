@@ -7,11 +7,6 @@ export const UserButtonWrapper = styled.div`
     display: flex;
 `;
 
-export const Username = styled.div`
-    color: ${MAIN.TEXT_COLOR};
-    padding: 0.5em 0 0 0.2em;
-`;
-
 export const ArrowDown = styled(TiArrowSortedDown)`
     margin: 0.5em 0 0 0.1em;
     color: ${MAIN.BASE_COLOR};
@@ -21,14 +16,17 @@ export const ArrowDown = styled(TiArrowSortedDown)`
 `;
 
 export const PlusMenu = styled(FiPlus)`
-    margin-top: 0.5em;
+    padding-top: 7px;
+    height: 28px;
+    width: 28px;
     color: ${MAIN.BASE_COLOR};
 `;
 
-export const UserIcon = styled(FaRegUserCircle)`
-    height: 2em;
-    width: 2em;
+export const UserProfile = styled.img`
+    height: 36px;
+    width: 36px;
     margin: 0 0.2em 0 0;
+    border-radius: 50%;
     color: ${MAIN.BASE_COLOR};
 `;
 
@@ -53,7 +51,7 @@ export const CreateDropdownContent = styled.div`
 `;
 
 export const UserDropdownMenu = styled.div`
-    font-size: 3vh;
+    font-size: 14px;
     float: right;
     position: relative;
     border: none;
@@ -64,7 +62,7 @@ export const UserDropdownMenu = styled.div`
 
 export const CreateDropdownMenu = styled.div`
     margin-right: 1em;
-    font-size: 3vh;
+    font-size: 14px;
     float: right;
     position: relative;
     border: none;
@@ -88,7 +86,7 @@ export const DropdownPlusBtn  = styled.div`
 export const StyledLink = styled(NavLink)`
     color: ${MAIN.TEXT_COLOR};
     padding: 1em 0.5em 1em 0.5em;
-    font-size: 2vh;
+    font-size: 12px;
     font-weight:bold;
     text-decoration: none;
     display: block;
@@ -103,7 +101,7 @@ export const StyledLink = styled(NavLink)`
 export const DropdownItem = styled.div`
     color: ${MAIN.TEXT_COLOR};
     padding: 1em 0.5em 1em 0.5em;
-    font-size: 2vh;
+    font-size: 12px;
     font-weight:bold;
     min-height: 2vh;
     text-decoration: none;

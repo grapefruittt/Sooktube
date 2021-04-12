@@ -1,20 +1,20 @@
 import React, {useEffect, useState} from 'react';
-import {useParams} from "react-router-dom";
+import {useParams, Switch, Route} from "react-router-dom";
 import * as S from "./style";
 import Header from "../../components/base/Header";
-import VideoPlayer from "../../components/common/VideoPlayer";
-import CommentBox from "./Comments";
-import DeleteVideo from "../UploadVideo/DeleteVideo";
+import CommentBox from "../../components/player/Comments";
+import VideoInfo from "../../components/player/VideoInfo";
 import {videoService, commentService} from "../../services";
-import {useSelector,useDispatch} from "react-redux";
+import {useDispatch} from "react-redux";
+import RelatedContentsInPlaylist from "../../components/player/RelatedContentsInPlaylist";
+import RelatedContentsByUploader from "../../components/player/RelatedContentsByUploader";
+import VideoTabs from "../../components/player/VideoTabs";
 
 function Player(){
-    const { videoID } = useParams();
-    const { username } = useParams();
+    const { videoID, username, tab } = useParams();
     const dispatch = useDispatch();
 
     const [loading, setLoading] = useState(true);
-    const loginUsername = useSelector(state => state.authentication.username);
 
     const [videoInfo, setVideoInfo] = useState({
         videoTitle: null,
@@ -43,42 +43,31 @@ function Player(){
         .then(response => {
             dispatch({type:'INIT',value:response});
         })    
-    },[])
+    },[videoID])
 
     return(
         <>
-       
             <Header/>
             {!loading &&
-            <S.VideoWrapper>
-                <S.VideoContainer>
-                    <VideoPlayer url={videoInfo.videoPath}/>
-                    <S.VideoTitle> {videoInfo.videoTitle} </S.VideoTitle>
-                    <S.VideoInfo>
-                        <S.VideoDate> {videoInfo.videoDate.substr(0,10)} </S.VideoDate>
-                        <S.Separator> | </S.Separator>
-                        <S.VideoUsername> {videoInfo.username} </S.VideoUsername>
-                        <S.Separator> | </S.Separator>
-                        {loginUsername === videoInfo.username &&
-                            <>
-                                <S.EditButton to={`/@${videoInfo.username}/video/update/${videoID}`}> 수정 </S.EditButton>
-                                <DeleteVideo videoID={videoID}/>
-                            </>
-                        }
-                        <S.VideoLike>
-                            <span> {videoInfo.likeCount} <S.Heart on={videoInfo.like}/> </span>
-                            <span> {videoInfo.dislikeCount} <S.DislikeHeart on={videoInfo.dislike}/> </span>
-                        </S.VideoLike>
-                    </S.VideoInfo>
-                    <S.VideoDesc> {videoInfo.videoDesc} </S.VideoDesc>
-                </S.VideoContainer>
-                <hr/>
-                <CommentBox videoID={videoID}/>
-            </S.VideoWrapper>
+                <S.VideoWrapper>
+                    <S.VideoMainContainer>
+                        <VideoInfo {...videoInfo}/>
+                        <CommentBox videoID={videoID}/>
+                    </S.VideoMainContainer>
+                    <S.RelatedContentsWrapper>
+                        <VideoTabs username={username} videoID={videoID} tab={tab}/>
+                        <Switch>
+                            <Route exact path={`/@${username}/video/${videoID}`}>
+                                <RelatedContentsInPlaylist videoID={videoID}/>
+                            </Route>
+                            <Route path={`/@${username}/video/${videoID}/uploader`}>
+                                <RelatedContentsByUploader videoID={videoID}/>
+                            </Route>
+                        </Switch>
+                    </S.RelatedContentsWrapper>
+                </S.VideoWrapper>
             }
         </>
-
-      
     );
 }
 

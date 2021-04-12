@@ -7,11 +7,15 @@ export const videoService = {
     UploadVideoInfo,
     getVideoFileByFileName,
     getVideoInfoByVideoID,
-    getVideoListByUsername,
     deleteVideoByVideoID,
     updateVideoByVideoID,
     getLikeCountByVideoID,
-    getVideoLikedByUsername
+    likeVideo,
+    cancelLikeVideo,
+    dislikeVideo,
+    cancelDislikeVideo,
+    getRelatedVideoListInPlaylist,
+    getRelatedVideoListByUploader
 };
 
 function getVideoUploadURL(input) {
@@ -85,7 +89,6 @@ function getVideoFileByFileName(uploadFileName) {
         })
 }
 
-
 function getVideoInfoByVideoID(videoID, username) {
     return axios({
         method: 'GET',
@@ -97,19 +100,6 @@ function getVideoInfoByVideoID(videoID, username) {
         .catch(error => {
             return error;
         })
-}
-
-function getVideoListByUsername(username) {
-    return axios({
-        method: 'GET',
-        url: `https://soktube.uc.r.appspot.com/api/video/desc/url/user/${username}`,
-    })
-      .then(response => {
-          return response.data;
-      })
-      .catch(error => {
-          return null;
-      })
 }
 
 function deleteVideoByVideoID(videoID) {
@@ -155,15 +145,81 @@ function getLikeCountByVideoID(videoID) {
         })
 }
 
-function getVideoLikedByUsername(username) {
+function likeVideo({videoID, username}) {
+    return axios({
+        method: 'POST',
+        url: `https://soktube.uc.r.appspot.com/api/like/video/${videoID}/${username}`,
+    })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            return null;
+        })
+}
+
+function cancelLikeVideo({videoID, username}) {
+    return axios({
+        method: 'DELETE',
+        url: `https://soktube.uc.r.appspot.com/api/like/video/revert/${videoID}/${username}`,
+    })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            return null;
+        })
+}
+
+function dislikeVideo({videoID, username}) {
+    return axios({
+        method: 'POST',
+        url: `https://soktube.uc.r.appspot.com/api/dislike/video/${videoID}/${username}`,
+    })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            return null;
+        })
+}
+
+function cancelDislikeVideo({videoID, username}) {
+    return axios({
+        method: 'DELETE',
+        url: `https://soktube.uc.r.appspot.com/api/dislike/video/revert/${videoID}/${username}`,
+    })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            return null;
+        })
+}
+
+//동영상이 어떤 재생목록에 추가되어 있는 경우, 해당 재생목록의 추천 + 비추천 수가 5 이상인 다른 영상들 리턴
+function getRelatedVideoListInPlaylist(videoID) {
     return axios({
         method: 'GET',
-        url: `https://soktube.uc.r.appspot.com/api/liked/video/byUsername/${username}`,
+        url: `https://soktube.uc.r.appspot.com/api/video/inlist/${videoID}`,
     })
-      .then(response => {
-          return response.data;
-      })
-      .catch(error => {
-          return null;
-      })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            return error;
+        })
+}
+
+function getRelatedVideoListByUploader(videoID) {
+    return axios({
+        method: 'GET',
+        url: `https://soktube.uc.r.appspot.com/api/video/recommend/byUploader/${videoID}`,
+    })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            return error;
+        })
 }

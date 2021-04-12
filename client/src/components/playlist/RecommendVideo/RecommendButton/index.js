@@ -2,70 +2,63 @@ import React, {useState} from 'react';
 import {playlistService} from "../../../../services";
 import {useParams} from 'react-router-dom';
 import * as S from './style';
+import {useSelector} from "react-redux";
 
-function RecommendButton({inVideoList, videoID, username, recommended, recCount}) {
+function RecommendButton({inVideoList, videoID, username, recommended, recCount, setCount, setRecommend, loading, setLoading}) {
     const {listID} = useParams();
+    const current_username = useSelector(state => state.authentication.username);
 
-    const [rec, setRec] = useState({
-        videoID,
-        inVideoList,
-        recommended,
-        recCount,
-        loading: false
-    });
+    const [isInVideoList, setInVideoList] = useState(inVideoList);
 
     async function toggleRecommend() {
         //이미 재생목록에 있던 영상을 추천
-       if(!rec.loading && rec.recommended === 0 && rec.inVideoList === 1) {
-            await setRec(rec => ({...rec, recommended: 1, loading: true}));
-            playlistService.recommendVideoInPlaylist({listID, videoID, username})
+       if(!loading && recommended === 0 && isInVideoList === 1) {
+            await setRecommend(1);
+            playlistService.recommendVideoInPlaylist({listID, videoID, username:current_username})
                 .then(response => {
-                    setRec(rec => ({
-                        ...rec,
-                        recommended: 1,
-                        recCount: response[0],
-                        loading: false
-                    }))
+                    setCount({
+                        recommended: response[0],
+                        disrecommended: response[1]
+                    })
+                    setLoading(false);
                 }
             )
         }
         //영상을 추천하면서 재생목록에 새로 추가
-        else if (!rec.loading && rec.recommended === 0 && rec.inVideoList === 0) {
-            await setRec(rec => ({...rec, recommended: 1, loading: true}));
+        else if (!loading && recommended === 0 && isInVideoList === 0) {
+           await setRecommend(1);
             playlistService.addVideoToPlaylist({listID, videoID, username})
                 .then(() => {
-                    return playlistService.recommendVideoInPlaylist({listID, videoID, username})
+                    return playlistService.recommendVideoInPlaylist({listID, videoID, username:current_username})
                 })
                 .then(response => {
-                    setRec({
-                        recommended: 1,
-                        inVideoList: 1,
-                        recCount: response[0],
-                        loading: false
+                    setCount({
+                        recommended: response[0],
+                        disrecommended: response[1]
                     })
+                    setInVideoList(1);
+                    setLoading(false);
                 })
         }
         //이미 재생목록에 있던 영상을 추천 취소
-        else if (!rec.loading && rec.recommended === 1 && rec.inVideoList === 1) {
-            await setRec(rec => ({...rec, recommended: 0, loading: true}),
-            playlistService.cancelRecommendVideoInPlaylist({listID, videoID, username})
+        else if (!loading && recommended === 1 && isInVideoList === 1) {
+           await setRecommend(0);
+            playlistService.cancelRecommendVideoInPlaylist({listID, videoID, username: current_username})
                 .then(response => {
-                    setRec(rec => ({
-                        ...rec,
-                        recommended: 0,
-                        recCount: response[0],
-                        loading: false
-                    }))
-                }))
-
+                    setCount({
+                        recommended: response[0],
+                        disrecommended: response[1]
+                    })
+                    setLoading(false);
+                })
         }
     }
 
     return (
-        <div>
-            <S.Recommend on={rec.recommended} onClick={toggleRecommend}/>
-            {rec.recCount}
-        </div>
+        <S.RecommendWrapper>
+            <S.Recommend on={recommended} onClick={toggleRecommend}/>
+            <span> {recCount} </span>
+        </S.RecommendWrapper>
     );
 }
 
